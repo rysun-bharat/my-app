@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import logo from '../../assets/logo.png'
+import logo from '../../assets/logo.svg'
 import { logout } from '../../store/slices/authSlice'
 import { LOGOUT_URL } from '../../utils/constants'
 

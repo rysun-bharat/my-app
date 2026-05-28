@@ -1,8 +1,6 @@
-import { useSelector } from 'react-redux'
-import LoginPage from './components/auth/LoginPage.jsx'
-import DashboardPage from './components/dashboard/DashboardPage.jsx'
+import { RouterProvider } from 'react-router-dom'
+import { router } from './router'
 
 export default function App() {
-  const { accessToken } = useSelector((state) => state.auth)
-  return accessToken ? <DashboardPage /> : <LoginPage />
+  return <RouterProvider router={router} />
 }

@@ -10,12 +10,14 @@ import {
   Typography,
 } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import logo from '../../assets/logo.png'
+import { useNavigate } from 'react-router-dom'
+import logo from '../../assets/logo.svg'
 import { loginFailure, loginStart, loginSuccess } from '../../store/slices/authSlice'
 import { LOGIN_URL } from '../../utils/constants'
 
 export default function LoginPage() {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { loginStatus, loginError } = useSelector((state) => state.auth)
 
   const [values, setValues] = useState({
@@ -79,6 +81,7 @@ export default function LoginPage() {
       }
 
       dispatch(loginSuccess(accessToken))
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       dispatch(loginFailure(error?.message || 'Network error'))
     }
@@ -196,9 +199,6 @@ export default function LoginPage() {
               {loginStatus === 'loading' ? 'Signing In...' : 'Sign In'}
             </Button>
 
-            {loginStatus === 'succeeded' ? (
-              <Alert severity="success">Login successful. Token saved in Redux store.</Alert>
-            ) : null}
           </Stack>
         </Paper>
       </Container>
