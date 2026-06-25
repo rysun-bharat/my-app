@@ -80,7 +80,10 @@ export default function LoginPage() {
         return
       }
 
-      dispatch(loginSuccess(accessToken))
+      const userType = data?.login_user_type ?? data?.data?.login_user_type ?? null
+      const parentType = data?.login_parent_type ?? data?.data?.login_parent_type ?? null
+
+      dispatch(loginSuccess({ accessToken, userType, parentType }))
       navigate('/dashboard', { replace: true })
     } catch (error) {
       dispatch(loginFailure(error?.message || 'Network error'))

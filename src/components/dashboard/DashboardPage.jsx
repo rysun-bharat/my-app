@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import logo from '../../assets/logo.svg'
 import { logout } from '../../store/slices/authSlice'
 import { LOGOUT_URL } from '../../utils/constants'
+import UserPageLists from '../user/userPageLists'
 
 const stats = [
   { label: 'My Events', value: 0, emoji: '📅', color: '#1976d2', bg: '#e3f0fc' },
@@ -136,7 +137,9 @@ export default function DashboardPage() {
               </Card>
             </Grid>
           ))}
+          <UserPageLists></UserPageLists>
         </Grid>
+        
       </Container>
     </Box>
   )
