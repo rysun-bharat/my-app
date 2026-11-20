@@ -1,7 +1,11 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import LoginPage from './components/auth/LoginPage'
-import DashboardPage from './components/dashboard/DashboardPage'
+import DashboardLayout from './components/layout/DashboardLayout'
+import DashboardHome from './components/dashboard/DashboardHome'
+import UserPageLists from './components/user/userPageLists'
+import EventsPage from './components/events/EventsPage'
+import SurveysPage from './components/surveys/SurveysPage'
 
 function ProtectedRoute({ children }) {
   const { accessToken } = useSelector((state) => state.auth)
@@ -30,8 +34,14 @@ export const router = createBrowserRouter([
     path: '/dashboard',
     element: (
       <ProtectedRoute>
-        <DashboardPage />
+        <DashboardLayout />
       </ProtectedRoute>
     ),
+    children: [
+      { index: true, element: <DashboardHome /> },
+      { path: 'users', element: <UserPageLists /> },
+      { path: 'events', element: <EventsPage /> },
+      { path: 'surveys', element: <SurveysPage /> },
+    ],
   },
 ])
