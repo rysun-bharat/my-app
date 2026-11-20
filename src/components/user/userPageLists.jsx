@@ -1,17 +1,36 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import {
+    Alert,
+    Box,
+    CircularProgress,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+} from "@mui/material";
 import { USERLIST_URL } from "../../utils/constants";
+import { authFetch } from "../../utils/apiClient";
 
 const UserPageLists = () => {
     const [userList, setUserList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(50);
+    const [totalRecords, setTotalRecords] = useState(0);
 
     const accessToken = useSelector((state) => state.auth.accessToken);
     const userType = useSelector((state) => state.auth.userType);
     const parentType = useSelector((state) => state.auth.parentType);
 
     useEffect(() => {
+        let ignore = false;
+
         const fetchUsers = async () => {
             setLoading(true);
             setError(null);
@@ -39,75 +58,109 @@ const UserPageLists = () => {
                     baps_id: "",
                     email: "",
                     sabha_attendence: "",
-                    page: 1,
-                    limit: 50,
+                    page: page + 1,
+                    limit: rowsPerPage,
                 });
 
-                const response = await fetch(`${USERLIST_URL}?${params.toString()}`, {
+                const response = await authFetch(`${USERLIST_URL}?${params.toString()}`, {
                     method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
                 });
+
+                if (response.status === 401) {
+                    return;
+                }
 
                 const data = await response.json().catch(() => ({}));
-                setUserList(data?.data?.records || []);
+                if (!ignore) {
+                    setUserList(data?.data?.records || []);
+                    setTotalRecords(data?.data?.total_records || 0);
+                }
             } catch (err) {
-                setError(err.message);
+                if (!ignore) {
+                    setError(err.message);
+                }
             } finally {
-                setLoading(false);
+                if (!ignore) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchUsers();
-    }, [accessToken, userType, parentType]);
 
-    if (loading) return <p style={{ padding: "16px" }}>Loading...</p>;
-    if (error) return <p style={{ padding: "16px", color: "red" }}>Error: {error}</p>;
+        return () => {
+            ignore = true;
+        };
+    }, [accessToken, userType, parentType, page, rowsPerPage]);
+
+    const handleChangePage = (_event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    if (loading) {
+        return (
+            <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (error) {
+        return (
+            <Box sx={{ p: 2 }}>
+                <Alert severity="error">{error}</Alert>
+            </Box>
+        );
+    }
 
     return (
-        <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                    <tr style={{ backgroundColor: "#f5f5f5" }}>
-                        <th style={th}>User ID</th>
-                        <th style={th}>MIS ID</th>
-                        <th style={th}>BAPS ID</th>
-                        <th style={th}>First Name</th>
-                        <th style={th}>Middle Name</th>
-                        <th style={th}>Last Name</th>
-                        <th style={th}>Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {userList.map((user) => (
-                        <tr key={user.id} style={{ borderBottom: "1px solid #e0e0e0" }}>
-                            <td style={td}>{user.id}</td>
-                            <td style={td}>{user.mis_id}</td>
-                            <td style={td}>{user.baps_id}</td>
-                            <td style={td}>{user.FirstName}</td>
-                            <td style={td}>{user.MiddleName}</td>
-                            <td style={td}>{user.LastName}</td>
-                            <td style={td}>{user.email}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <Box sx={{ p: 3 }}>
+            <Paper elevation={0} sx={{ border: (theme) => `1px solid ${theme.palette.divider}` }}>
+                <TableContainer>
+                    <Table>
+                        <TableHead>
+                            <TableRow sx={{ bgcolor: "grey.100" }}>
+                                <TableCell>User ID</TableCell>
+                                <TableCell>MIS ID</TableCell>
+                                <TableCell>BAPS ID</TableCell>
+                                <TableCell>First Name</TableCell>
+                                <TableCell>Middle Name</TableCell>
+                                <TableCell>Last Name</TableCell>
+                                <TableCell>Email</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {userList.map((user) => (
+                                <TableRow key={user.id} hover>
+                                    <TableCell>{user.id}</TableCell>
+                                    <TableCell>{user.mis_id}</TableCell>
+                                    <TableCell>{user.baps_id}</TableCell>
+                                    <TableCell>{user.FirstName}</TableCell>
+                                    <TableCell>{user.MiddleName}</TableCell>
+                                    <TableCell>{user.LastName}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    component="div"
+                    count={totalRecords}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    rowsPerPageOptions={[25, 50, 100]}
+                />
+            </Paper>
+        </Box>
     );
-};
-
-const th = {
-    padding: "10px 14px",
-    textAlign: "left",
-    fontWeight: "600",
-    borderBottom: "2px solid #ccc",
-    whiteSpace: "nowrap",
-};
-
-const td = {
-    padding: "10px 14px",
-    fontSize: "14px",
 };
 
 export default UserPageLists;
