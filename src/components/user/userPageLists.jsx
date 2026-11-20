@@ -71,6 +71,14 @@ const UserPageLists = () => {
                 }
 
                 const data = await response.json().catch(() => ({}));
+
+                if (!response.ok || data?.status === false) {
+                    if (!ignore) {
+                        setError(data?.message || "Failed to load users");
+                    }
+                    return;
+                }
+
                 if (!ignore) {
                     setUserList(data?.data?.records || []);
                     setTotalRecords(data?.data?.total_records || 0);
@@ -102,25 +110,32 @@ const UserPageLists = () => {
         setPage(0);
     };
 
-    if (loading) {
-        return (
-            <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (error) {
-        return (
-            <Box sx={{ p: 2 }}>
-                <Alert severity="error">{error}</Alert>
-            </Box>
-        );
-    }
-
     return (
         <Box sx={{ p: 3 }}>
-            <Paper elevation={0} sx={{ border: (theme) => `1px solid ${theme.palette.divider}` }}>
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
+            <Paper
+                elevation={0}
+                sx={{ border: (theme) => `1px solid ${theme.palette.divider}`, position: "relative" }}
+            >
+                {loading && (
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            inset: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "rgba(255, 255, 255, 0.6)",
+                            zIndex: 1,
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                )}
                 <TableContainer>
                     <Table>
                         <TableHead>
